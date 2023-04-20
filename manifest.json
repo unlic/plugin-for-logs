@@ -1,0 +1,32 @@
+{
+   "manifest_version": 2,
+   "name": "Asterisk configurator creator ",
+   "content_security_policy":  "script-src 'self' 'unsafe-eval'; object-src 'self'",
+   "version": "1.1",
+   "description": "Плагин для построения конфигурационного файла для регистрации номера в Asterisk",
+   "icons": {
+       "128": "icon.png"
+   },
+     "permissions": [  
+     "notifications",
+    "contextMenus",
+    "activeTab",
+    "storage",
+    "https://panel.binotel.com/*",
+    "https://api.binotel.com/*"
+  ],  
+   "browser_action": {
+        "default_icon": "icon.png",
+        "default_popup": "popup.html"
+    },
+	
+
+   "content_scripts": [
+       {
+           "matches": ["https://panel.binotel.com/*"],
+           "js": [ "app.js" ],
+           "run_at": "document_idle",
+           "all_frames":true
+       }
+   ]
+}
