@@ -1,9 +1,9 @@
 {
    "manifest_version": 2,
-   "name": "Asterisk configurator creator ",
+   "name": "Logs configurator",
    "content_security_policy":  "script-src 'self' 'unsafe-eval'; object-src 'self'",
    "version": "1.1",
-   "description": "Плагин для построения конфигурационного файла для регистрации номера в Asterisk",
+   "description": "Плагин редактирования логов",
    "icons": {
        "128": "icon.png"
    },
