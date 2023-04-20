@@ -7,8 +7,9 @@ var companyId = element.querySelector('div').textContent;
 
 var listOfLogs = document.getElementById('diagnosticTabWithFullLog');
 
+if(listOfLogs!=null){
+
 var originalText = listOfLogs.innerHTML;
-var link = '<a href="http://example.com">Link</a>';
 
 var element = document.querySelector('.company-id');
 var companyId = element.querySelector('div').textContent;
@@ -54,3 +55,4 @@ for (var i = 0; i < myListStrings.length; i++)
 
 listOfLogs.innerHTML = myString ;
 
+}
