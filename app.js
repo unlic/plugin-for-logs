@@ -6,7 +6,14 @@ var companyId = element.querySelector('div').textContent;
 
 
 var listOfLogs = document.getElementById('diagnosticTabWithFullLog');
+//var helpTooltipsTemp = document.getElementById('diagnosticTabWithFullLog').getElementsByClassName('helpTooltip');
 
+/*for(i=0;i< helpTooltipsTemp.length;i++)
+{
+    
+    helpTooltipsTemp[i].style.color = "green";
+    
+}*/
 if(listOfLogs!=null)
 {
 
@@ -21,8 +28,12 @@ if(listOfLogs!=null)
     var routeId = text[1].split(",")[1];
     var numberId = text[1].split(",")[2];
 
+    var routeIdNode = document.createTextNode(`<a target="_blank" href="https://panel.binotel.com/?module=routes&companyID=${companyId}&action=edit&routeID=${routeId}&type=callRules">${routeId}</a>`);
+    var numberIdNode = document.createTextNode(`<a target="_blank" href="https://panel.binotel.com/?module=pbxNumbersEnhanced&companyID=${companyId}&action=edit&pbxNumberID=${numberId}">${numberId}</a>`);
+
     var myString = originalText.replace(originalText.match(regex)[1].split(",")[1], `<a target="_blank" href="https://panel.binotel.com/?module=routes&companyID=${companyId}&action=edit&routeID=${routeId}&type=callRules">${routeId}</a>`);
     var myString = myString.replace(originalText.match(regex)[1].split(",")[2], `<a target="_blank" href="https://panel.binotel.com/?module=pbxNumbersEnhanced&companyID=${companyId}&action=edit&pbxNumberID=${numberId}">${numberId}</a>`);
+
 
     var myListStrings = myString.split("\n");
     regex = /ivrRouteID=(\d+)/; 
@@ -42,7 +53,6 @@ if(listOfLogs!=null)
             var audioSrc = myListStrings[i].match(regexAux);
             var textBefore = audioSrc[1];
             var textAfter = audioSrc[3];
-            console.log(audioSrc);
             var audioSrc = `https://panel.binotel.com/public/vOffice/${companyId}/origin/voice/${audioSrc[2].replace('.alaw','.wav').replace('.gsm','.wav')}`;
 
             myListStrings[i] = oldString + `<audio controls src="${audioSrc}">${audioSrc[2].replace('.alaw','.wav')}</audio><br>`;
@@ -51,3 +61,49 @@ if(listOfLogs!=null)
     }
     listOfLogs.innerHTML = myString ;
 }
+var helpTooltips = document.getElementById('diagnosticTabWithFullLog').getElementsByClassName('helpTooltip');
+
+for (let i = 0; i < helpTooltips.length; i++) {  
+  let div = document.createElement('div'); 
+   
+   
+  
+  div.innerHTML = helpTooltips[i].dataset.originalTitle; 
+
+  helpTooltips[i].appendChild(div); 
+  helpTooltips[i].style.position = "relative";
+
+
+  div.style.position = "absolute";
+  div.style.top= "-60px";   
+  div.style.left= "100px";  
+  div.style.backgroundColor = "#000"; 
+  div.style.color = "#fff"; 
+  div.style.border = "1px solid #ccc"; 
+  div.style.padding="10px"; 
+  div.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"; 
+  div.style.display = 'none';
+
+
+  helpTooltips[i].addEventListener('mouseover', function(event) {
+    showDiv(div);
+  });
+
+  helpTooltips[i].addEventListener('mouseout', function(event) {
+    hideDiv(div);
+  });
+}
+
+function showDiv(div) {
+  div.style.display = 'block';
+}
+
+function hideDiv(div) {
+  div.style.display = 'none';
+}
+
+
+
+
+
+
