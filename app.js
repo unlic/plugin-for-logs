@@ -1,22 +1,17 @@
 var elem = document.getElementsByClassName('in-queue-calls-with-poor-quality')[0];
-elem.style.color = "green";
+elem.style.color = "pink";
 
 var element = document.querySelector('.company-id');
 var companyId = element.querySelector('div').textContent;
 
 
 var listOfLogs = document.getElementById('diagnosticTabWithFullLog');
-//var helpTooltipsTemp = document.getElementById('diagnosticTabWithFullLog').getElementsByClassName('helpTooltip');
 
-/*for(i=0;i< helpTooltipsTemp.length;i++)
-{
-    
-    helpTooltipsTemp[i].style.color = "green";
-    
-}*/
 if(listOfLogs!=null)
 {
-
+    
+    elem.style.color = "green";
+    
     var originalText = listOfLogs.innerHTML;
 
     var element = document.querySelector('.company-id');
@@ -27,6 +22,7 @@ if(listOfLogs!=null)
     var myListStrings = originalText.split("\n");
     regex = /outeID=(\d+)/; 
     var regexAux = /(.*Playing 'vOffice\/\d+\/production\/voice\/)(.*?)('.*)/;
+    var regexAuxBase = /(.*Playing 'vOffice\/base\/production\/voice\/)(.*?)('.*)/;
     for (var i = 0; i < myListStrings.length; i++) 
     {
         routeId = myListStrings[i].match(regex);
@@ -43,6 +39,16 @@ if(listOfLogs!=null)
             var textBefore = audioSrc[1];
             var textAfter = audioSrc[3];
             var audioSrc = `https://panel.binotel.com/public/vOffice/${companyId}/origin/voice/${audioSrc[2].replace('.alaw','.wav').replace('.gsm','.wav')}`;
+
+            myListStrings[i] = oldString + `<audio controls src="${audioSrc}">${audioSrc[2].replace('.alaw','.wav')}</audio><br>`;
+            originalText = originalText.replace(oldString,myListStrings[i]);
+        }
+        if(myListStrings[i].match(regexAuxBase))
+        {
+            var audioSrc = myListStrings[i].match(regexAuxBase);
+            var textBefore = audioSrc[1];
+            var textAfter = audioSrc[3];
+            var audioSrc = `https://panel.binotel.com/public/vOffice/base/origin/voice/${audioSrc[2].replace('.alaw','.wav').replace('.gsm','.wav')}`;
 
             myListStrings[i] = oldString + `<audio controls src="${audioSrc}">${audioSrc[2].replace('.alaw','.wav')}</audio><br>`;
             originalText = originalText.replace(oldString,myListStrings[i]);
