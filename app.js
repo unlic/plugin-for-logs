@@ -1,5 +1,4 @@
 var elem = document.getElementsByClassName('in-queue-calls-with-poor-quality')[0];
-elem.style.color = "pink";
 
 var element = document.querySelector('.company-id');
 var companyId = element.querySelector('div').textContent;
@@ -35,6 +34,7 @@ if(listOfLogs!=null)
         }
         if(myListStrings[i].match(regexAux))
         {
+
             var audioSrc = myListStrings[i].match(regexAux);
             var textBefore = audioSrc[1];
             var textAfter = audioSrc[3];
