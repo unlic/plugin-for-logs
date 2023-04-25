@@ -20,8 +20,8 @@ if(listOfLogs!=null)
 
     var myListStrings = originalText.split("\n");
     regex = /outeID=(\d+)/; 
-    var regexAux = /(.*Playing 'vOffice\/\d+\/production\/voice\/)(.*?)('.*)/;
-    var regexAuxBase = /(.*Playing 'vOffice\/base\/production\/voice\/)(.*?)('.*)/;
+    var regexAux = /(.*Playing 'vOffice\/(\w+)\/production\/voice\/)(.*?)('.*)/;    
+    var regexDTMF = /DTMF DTMF/; 
     for (var i = 0; i < myListStrings.length; i++) 
     {
         routeId = myListStrings[i].match(regex);
@@ -34,24 +34,19 @@ if(listOfLogs!=null)
         }
         if(myListStrings[i].match(regexAux))
         {
+            var audioSrc = myListStrings[i].match(regexAux);           
 
-            var audioSrc = myListStrings[i].match(regexAux);
-            var textBefore = audioSrc[1];
-            var textAfter = audioSrc[3];
-            var audioSrc = `https://panel.binotel.com/public/vOffice/${companyId}/origin/voice/${audioSrc[2].replace('.alaw','.wav').replace('.gsm','.wav')}`;
+            var linkCompanyFromAudio = audioSrc[2];
+            var auxLink = audioSrc[3].replace('.alaw','.wav').replace('.gsm','.wav');
+            var audioSrc = `https://panel.binotel.com/public/vOffice/${linkCompanyFromAudio}/origin/voice/${auxLink}`;
 
-            myListStrings[i] = oldString + `<audio controls src="${audioSrc}">${audioSrc[2].replace('.alaw','.wav')}</audio><br>`;
+            myListStrings[i] = oldString + `<div ><audio controls src="${audioSrc}">${auxLink}</audio></div>`;
             originalText = originalText.replace(oldString,myListStrings[i]);
-        }
-        if(myListStrings[i].match(regexAuxBase))
+        }       
+        if(myListStrings[i].match(regexDTMF))
         {
-            var audioSrc = myListStrings[i].match(regexAuxBase);
-            var textBefore = audioSrc[1];
-            var textAfter = audioSrc[3];
-            var audioSrc = `https://panel.binotel.com/public/vOffice/base/origin/voice/${audioSrc[2].replace('.alaw','.wav').replace('.gsm','.wav')}`;
-
-            myListStrings[i] = oldString + `<audio controls src="${audioSrc}">${audioSrc[2].replace('.alaw','.wav')}</audio><br>`;
-            originalText = originalText.replace(oldString,myListStrings[i]);
+            var newText = myListStrings[i].replace("DTMF DTMF", `<b style = "color:#30D5C8;margin: 0">DTMF DTMF</b>`);
+            originalText = originalText.replace(myListStrings[i], newText);
         }
     
     }
@@ -87,9 +82,9 @@ for (let i = 0; i < helpTooltips.length; i++) {
 
 
   div.style.position = "absolute";
-  div.style.top= "-60px";   
+  div.style.top= "-65px"; 
   div.style.left= "100px";  
-  div.style.backgroundColor = "#000"; 
+  div.style.backgroundColor = "rgba(0, 0, 0, 0.8)"; 
   div.style.color = "#fff"; 
   div.style.border = "1px solid #ccc"; 
   div.style.padding="10px"; 
