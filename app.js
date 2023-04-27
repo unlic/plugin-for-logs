@@ -10,14 +10,18 @@ var massACS = {
     assignedToEmployeeEmail : "Еmail отвественного сотрудника в MyBinotel для обработки входящего звонка - ",
     assignedToEmployeeNumber : "Внутреняя линия отвественного сотрудника в MyBinotel для обработки входящего звонка - ",
     assignedToEmployeeID: "Идентификатор отвественного сотрудника в MyBinotel для обработки входящего звонка - ",
-    linkToCrmUrl:"Ссылка, которая будет отображатся сотруднику в плагине для Chrome - ",
-    linkToCrmTitle: "Текст ссылки, которая отображатся сотруднику в плагине для Chrome - ",
-    linkToCrm2Url:"Ссылка №2, которая отображатся сотруднику в плагине для Chrome - ", 
-    linkToCrm2Title:"Текст ссылки №2, которая отображатся сотруднику в плагине для Chrome - ",
+    linkToCrmUrl:"Ссылка, по которой доступна карточка клиента - ",
+    linkToCrmTitle: "Текст ссылки, который отображатся сотруднику в плагине для Chrome - ",
+    linkToCrm2Url:"Ссылка №2, по которой доступна карточка клиента - ", 
+    linkToCrm2Title:"Текст ссылки №2, который отображатся сотруднику в плагине для Chrome - ",
     name: "Имя клиента отображенное на телефоне сотрудника и в плагине для Chrome - ",
     description:"Дополнительное описание в нотификации плагина - ",
     variables: "Данные для передачи в сценарий входящего звонка - ",
-    URL:"Ссылка ACS - "
+    URL:"Ссылка ACS - ",
+    USERAGENT:"Устройство на котором зарегистрирована внутренняя линия которая ответила - ",
+    CallerIdWas:"Вид номера в которов он к нам поступил - ",
+    CallerIdBecame:"Вид номера который передан в ЛК - "
+
 };
 
 var massKeysACS = Object.keys(massACS);
@@ -46,7 +50,9 @@ if(listOfLogs!=null)
     {    
         var position = 0;
         var colorLink = "green";
+        var hrefToHistory = "";
         var str = `"${massKeysACS[i]}":"(.*?)"`;
+        var typeTag = "span"; 
         if (massKeysACS[i] =="variables")
         {
             str = `"${massKeysACS[i]}":{"(.*?)"}`;
@@ -58,6 +64,26 @@ if(listOfLogs!=null)
             position = 1;
             colorLink = "teal"
         }
+        if (massKeysACS[i] =="USERAGENT")
+        {
+            str = `", "${massKeysACS[i]}: (.*?)"`;
+            position = 0;
+            colorLink = "#EA811D"
+        }
+        if (massKeysACS[i] =="CallerIdWas")
+        {
+            str = `", "Caller ID was (.*?)"`;
+            position = 1;
+            colorLink = "#EA811D"
+        }
+        if (massKeysACS[i] =="CallerIdBecame")
+        {
+            str = `", "Caller ID became (.*?)"`;
+            position = 1;
+            colorLink = "#EA811D";
+            typeTag = "a";
+            hrefToHistory = `target="_blank" href="https://${companyId}.gmmy.binotel.com/?module=history&subject=`;
+        }
         var reg = new RegExp(str);
         console.log(reg);
 
@@ -65,8 +91,10 @@ if(listOfLogs!=null)
         {
             var p = originalText.match(reg);
 
+            if(typeTag=="a"){hrefToHistory = hrefToHistory+p[1]+'"';}
+
             massACS[massKeysACS[i]] = massACS[massKeysACS[i]] + p[1];
-            originalText = originalText.replace(p[0],` <span style = "color:${colorLink}" id = "${massKeysACS[i]}" class = "ACS">${p[position]}</span>`);
+            originalText = originalText.replace(p[0],` <${typeTag} ${hrefToHistory} style = "color:${colorLink}" id = "${massKeysACS[i]}" class = "ACS">${p[position]}</${typeTag}>`);
         }
 
     }
