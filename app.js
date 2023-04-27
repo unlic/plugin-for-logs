@@ -42,7 +42,10 @@ var dictionaryOfTag = {
     Declined:"Баланс на номерах Інтертелекому або SIP Life",
     limitOfOne: "Sip номер (або сім карта в шлюзі клієнта) не пропустив вихідний дзвінок з нього, так як він одноканальний і вже зайнятий іншим вхідним або вихідним дзвінком - ",
     response500: "Не коректна маршрутизація(якщо це сіп номер),  також таку  помилку може віддавати сімка в нашому обладнанні, коли вона вже зайняти іншим дзвінком",
-    noRouteToDestination: "Немає маршруту для дзвінку"
+    noRouteToDestination: "Немає маршруту для дзвінку",
+    executing: "Вид номера в котором клиентом был набран номер - ",
+    successNumbers: "Номер с которого осуществлен набор - ",
+    errorNumbers: "Номер с которого была попытка набора - "
 
 
 };
@@ -86,11 +89,14 @@ if(listOfLogs!=null)
     for (let i = 0; i < dictionaryKeysOfTag.length; i++) 
     {    
         var position = 0;
+        var secondPositionText = 0;
+        var positionText = 1;
         var colorLink = "green";
         var hrefToHistory = "";
         var str = `"${dictionaryKeysOfTag[i]}":"(.*?)"`;
         var typeTag = "span";
         var needAddToDict = true;
+        var secondText = "";
         
         switch (dictionaryKeysOfTag[i]) {
             case "variables":
@@ -145,22 +151,50 @@ if(listOfLogs!=null)
                 typeTag = "b";
                 colorLink = "red";
                 needAddToDict = false;
+                break;
+            case "executing":
+                str = `VERBOSE Executing \\[(\\d+)@(\\w+):1\\]`;
+                secondText = " Локаль клиента - ";
+                secondPosition = 2;
+                position = 0;
+                colorLink = "violet";                    
+                break;   
+            case "successNumbers":
+                str = `VERBOSE (\\w+) SIP/(\\w+)/(\\w+)`;
+                secondText = " Вид номера на который был набор - ";
+                secondPositionText = 3;
+                positionText = 2;
+                position = 0;
+                colorLink = "violet"; 
+                                  
                 break; 
+            case "errorNumbers":
+                str = `VERBOSE Couldn't call SIP/(\\w+)/(\\w+)`;
+                secondText = " Вид номера на который был набор - ";
+                secondPositionText = 2;
+                colorLink = "violet";                    
+                break;   
             default:
               // handle unknown tag
               break;
-        }
+
+              
+        }//"Вид номера в котором был передан оператору"
         
 
         var reg = new RegExp(str);
-                
+              
         if(originalText.match(reg))
         {
             var changeText = originalText.match(reg);
-            console.log(changeText);
-            if(typeTag=="a"){hrefToHistory = hrefToHistory+changeText[1]+'"';}
+            if(typeTag=="a"){hrefToHistory = hrefToHistory+changeText[positionText]+'"';}
+            if(secondText!="")
+            {
+                secondText += changeText[secondPositionText];
+            }
+              
 
-            if(needAddToDict){dictionaryOfTag[dictionaryKeysOfTag[i]] = dictionaryOfTag[dictionaryKeysOfTag[i]] + changeText[1];}
+            if(needAddToDict){dictionaryOfTag[dictionaryKeysOfTag[i]] = dictionaryOfTag[dictionaryKeysOfTag[i]] + changeText[positionText]+secondText;}
             originalText = originalText.replace(changeText[position],` <${typeTag} ${hrefToHistory} style = "color:${colorLink}" id = "${dictionaryKeysOfTag[i]}" class = "ACS">${changeText[position]}</${typeTag}>`);
         }
 
@@ -266,6 +300,8 @@ for (let i = 0; i < acs.length; i++) {
     acs[i].appendChild(div); 
     acs[i].style.position = "relative";
   
+    if(acs[i].id == "executing"){ div.style.top = "15px";}
+    else{div.style.bottom = "25px";}
   
     div.style.position = "absolute";
     div.style.left= "100px";  
@@ -275,7 +311,7 @@ for (let i = 0; i < acs.length; i++) {
     div.style.padding="10px"; 
     div.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"; 
     div.style.display = 'none';
-    div.style.bottom = "25px";
+    
   
   
     acs[i].addEventListener('mouseover', function(event) {
