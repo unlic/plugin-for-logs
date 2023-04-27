@@ -79,17 +79,18 @@ if(listOfLogs!=null)
         }
         if (massKeysACS[i] =="CallerIdWas")
         {
-            str = `", "Caller ID was (.*?)"`;
-            position = 1;
+            str = `"Caller ID was (.*?)"`;
+            position = 0;
             colorLink = "#EA811D"
         }
         if (massKeysACS[i] =="CallerIdBecame")
         {
-            str = `", "Caller ID became (.*?)"`;
-            position = 1;
+            str = `"Caller ID became (.*?)"`;
+            position = 0;
             colorLink = "#EA811D";
             typeTag = "a";
             hrefToHistory = `target="_blank" href="https://${companyId}.gmmy.binotel.com/?module=history&subject=`;
+            console.log(str);
         }
         var reg = new RegExp(str);        
         if(originalText.match(reg))
