@@ -94,7 +94,7 @@ if(listOfLogs!=null)
             if(typeTag=="a"){hrefToHistory = hrefToHistory+p[1]+'"';}
 
             massACS[massKeysACS[i]] = massACS[massKeysACS[i]] + p[1];
-            originalText = originalText.replace(p[0],` <${typeTag} ${hrefToHistory} style = "color:${colorLink}" id = "${massKeysACS[i]}" class = "ACS">${p[position]}</${typeTag}>`);
+            originalText = originalText.replace(p[position],` <${typeTag} ${hrefToHistory} style = "color:${colorLink}" id = "${massKeysACS[i]}" class = "ACS">${p[position]}</${typeTag}>`);
         }
 
     }
