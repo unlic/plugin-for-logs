@@ -35,15 +35,22 @@ if(listOfLogs!=null)
 
     var element = document.querySelector('.company-id');
     var companyId = element.querySelector('div').textContent;
-
-    
-
     var myListStrings = originalText.split("\n");
+    
     regex = /outeID=(\d+)/; 
     var regexAux = /(.*Playing 'vOffice\/(\w+)\/production\/voice\/)(.*?)('.*)/;    
     var regexDTMF = /DTMF DTMF/; 
+    
+    var regexNumberToCall = /VERBOSE Goto \(did2route,(\d+)/;
+    const today = new Date();
+    const day = today.getDate();
+    const month = today.getMonth() + 1; 
+    const year = today.getFullYear();
+    const numberToCall = originalText.match(regexNumberToCall);
+    const outgoingLink = `https://${companyId}.gmmy.binotel.com/?module=cdrs&startDay=${day}&startMonth=${month}&startYear=${year}&showOnlyFilters=&callType=external&selectByTrunkNumber=${numberToCall[1]}`;
+    const incomingLink = `https://${companyId}.gmmy.binotel.com/?module=cdrs&startDay=${day}&startMonth=${month}&startYear=${year}&showOnlyFilters=&callType=internal&selectByDidNumber=${numberToCall[1]}`
 
-
+    originalText = originalText.replace(numberToCall[0],numberToCall[0]+`{ <a href=${outgoingLink}>исход</a> | <a href=${incomingLink}>вход</a> }`);
     
 
     for (let i = 0; i < massKeysACS.length; i++) 
@@ -84,17 +91,15 @@ if(listOfLogs!=null)
             typeTag = "a";
             hrefToHistory = `target="_blank" href="https://${companyId}.gmmy.binotel.com/?module=history&subject=`;
         }
-        var reg = new RegExp(str);
-        console.log(reg);
-
+        var reg = new RegExp(str);        
         if(originalText.match(reg))
         {
-            var p = originalText.match(reg);
+            var changeText = originalText.match(reg);
 
-            if(typeTag=="a"){hrefToHistory = hrefToHistory+p[1]+'"';}
+            if(typeTag=="a"){hrefToHistory = hrefToHistory+changeText[1]+'"';}
 
-            massACS[massKeysACS[i]] = massACS[massKeysACS[i]] + p[1];
-            originalText = originalText.replace(p[position],` <${typeTag} ${hrefToHistory} style = "color:${colorLink}" id = "${massKeysACS[i]}" class = "ACS">${p[position]}</${typeTag}>`);
+            massACS[massKeysACS[i]] = massACS[massKeysACS[i]] + changeText[1];
+            originalText = originalText.replace(changeText[position],` <${typeTag} ${hrefToHistory} style = "color:${colorLink}" id = "${massKeysACS[i]}" class = "ACS">${changeText[position]}</${typeTag}>`);
         }
 
     }
