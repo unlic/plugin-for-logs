@@ -6,6 +6,7 @@ var companyId = element.querySelector('div').textContent;
 var span3 = document.getElementsByClassName('span3')[0];
 
 
+
 if(span3!=null)
 {
     const regaxFullLog = /Лог ID: C-(\w+)/;
@@ -62,10 +63,11 @@ if(listOfLogs!=null)
     var element = document.querySelector('.company-id');
     var companyId = element.querySelector('div').textContent;
     var myListStrings = originalText.split("\n");
+    var stringForManyId;
     
     regex = /outeID=(\d+)/; 
     var regexAux = /(.*Playing 'vOffice\/(\w+)\/production\/voice\/)(.*?)('.*)/;    
-    var regexDTMF = /DTMF DTMF/; 
+    var regexDTMF = /DTMF DTMF/g; 
     
     var regexNumberToCall = /VERBOSE Goto \(did2route,(\d+)/;
     const today = new Date();
@@ -73,6 +75,7 @@ if(listOfLogs!=null)
     const month = today.getMonth() + 1; 
     const year = today.getFullYear();
     const numberToCall = originalText.match(regexNumberToCall);
+
 
     try 
     {
@@ -92,11 +95,17 @@ if(listOfLogs!=null)
         var secondPositionText = 0;
         var positionText = 1;
         var colorLink = "green";
-        var hrefToHistory = "";
+        var hrefTo = "";
         var str = `"${dictionaryKeysOfTag[i]}":"(.*?)"`;
         var typeTag = "span";
         var needAddToDict = true;
         var secondText = "";
+        var className = "ACS";
+        var id =  `id = "${dictionaryKeysOfTag[i]}"`;
+        var needGlobal = false;
+        var needSpan = false;
+        var newSpan = "";
+
         
         switch (dictionaryKeysOfTag[i]) {
             case "variables":
@@ -123,14 +132,15 @@ if(listOfLogs!=null)
                 position = 0;
                 colorLink = "#EA811D";
                 typeTag = "a";
-                hrefToHistory = `target="_blank" href="https://${companyId}.gmmy.binotel.com/?module=history&subject=`;
+                hrefTo = `target="_blank" href="https://${companyId}.gmmy.binotel.com/?module=history&subject=`;
                 break;
             case "Declined":
                 str = `Got SIP response 603 "Declined" back from ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+)`;
                 position = 0;
                 typeTag = "b";
                 colorLink = "red";
-                needAddToDict = false;  
+                needAddToDict = false;
+                needGlobal = true;  
                 break; 
             case "limitOfOne":
                 str = `NOTICE Call to peer '(.*?)' rejected due to usage limit of 1`;
@@ -144,6 +154,7 @@ if(listOfLogs!=null)
                 typeTag = "b";
                 colorLink = "red";
                 needAddToDict = false;
+                needGlobal = true;
                 break; 
             case "noRouteToDestination":
                 str = `VERBOSE AGI Script Executing Application: (Playback) Options: (vOfficeSystem/production/voice/no-route-to-destination)`;
@@ -156,6 +167,7 @@ if(listOfLogs!=null)
                 str = `VERBOSE Executing \\[(\\d+)@(\\w+):1\\]`;
                 secondText = " Локаль клиента - ";
                 secondPosition = 2;
+                secondPositionText = 2;
                 position = 0;
                 colorLink = "violet";                    
                 break;   
@@ -166,36 +178,79 @@ if(listOfLogs!=null)
                 positionText = 2;
                 position = 0;
                 colorLink = "violet"; 
+                needSpan = true;
+                needGlobal = true;
+                needAddToDict = false;
                                   
                 break; 
             case "errorNumbers":
                 str = `VERBOSE Couldn't call SIP/(\\w+)/(\\w+)`;
                 secondText = " Вид номера на который был набор - ";
                 secondPositionText = 2;
-                colorLink = "violet";                    
+                colorLink = "violet";  
+                needSpan = true; 
+                needGlobal = true; 
+                needAddToDict = false;                
                 break;   
             default:
-              // handle unknown tag
+              
               break;
 
               
-        }//"Вид номера в котором был передан оператору"
-        
+        }
 
-        var reg = new RegExp(str);
+        if(needGlobal) 
+        {
+            var reg = new RegExp(str,"g");
+            
+        }
+        else
+        {
+            var reg = new RegExp(str);
+        }
               
         if(originalText.match(reg))
         {
             var changeText = originalText.match(reg);
-            if(typeTag=="a"){hrefToHistory = hrefToHistory+changeText[positionText]+'"';}
-            if(secondText!="")
+            if(typeTag=="a"){hrefTo = hrefTo+changeText[positionText]+'"';}
+            if(secondText!=""&&!needGlobal)
             {
                 secondText += changeText[secondPositionText];
             }
-              
 
-            if(needAddToDict){dictionaryOfTag[dictionaryKeysOfTag[i]] = dictionaryOfTag[dictionaryKeysOfTag[i]] + changeText[positionText]+secondText;}
-            originalText = originalText.replace(changeText[position],` <${typeTag} ${hrefToHistory} style = "color:${colorLink}" id = "${dictionaryKeysOfTag[i]}" class = "ACS">${changeText[position]}</${typeTag}>`);
+            if(needSpan)
+            {
+                reg = new RegExp(str);
+                var oldSecondString = secondText;
+                for(var q = 0;q < myListStrings.length;q++)
+                { 
+                    if(myListStrings[q].match(reg))
+                    {
+                        const oldString = myListStrings[q];
+                        secondText = oldSecondString;
+                        changeText = myListStrings[q].match(reg);
+                        if(secondText!="")
+                        {
+                            secondText += changeText[secondPositionText];
+                        }
+                        var textToDict =  dictionaryOfTag[dictionaryKeysOfTag[i]] + changeText[positionText];
+                        if(needAddToDict){dictionaryOfTag[dictionaryKeysOfTag[i]] = textToDict+secondText;}
+                        newSpan = `<span hidden="true"> ${textToDict+secondText}</span>`;
+                        myListStrings[q] = myListStrings[q].replace(reg,` <${typeTag} ${hrefTo} style = "color:${colorLink}" ${id} class = "${className}">${changeText[position]} ${newSpan}</${typeTag}>`);
+                        originalText = originalText.replace(oldString,myListStrings[q]);
+                    }
+                    
+                }
+                
+
+            }
+            else
+            {
+                if(needAddToDict){dictionaryOfTag[dictionaryKeysOfTag[i]] = dictionaryOfTag[dictionaryKeysOfTag[i]] + changeText[positionText]+secondText;}
+                originalText = originalText.replace(reg,` <${typeTag} ${hrefTo} style = "color:${colorLink}" ${id} class = "${className}">${changeText[position]} ${newSpan}</${typeTag}>`);
+            }
+
+
         }
 
     }   
@@ -227,14 +282,9 @@ if(listOfLogs!=null)
 
             myListStrings[i] = oldString + `<div ><audio controls src="${audioSrc}">${auxLink}</audio></div>`;
             originalText = originalText.replace(oldString,myListStrings[i]);
-        }       
-        if(myListStrings[i].match(regexDTMF))
-        {
-            var newText = myListStrings[i].replace("DTMF DTMF", `<b style = "color:#30D5C8;margin: 0">DTMF DTMF</b>`);
-            originalText = originalText.replace(myListStrings[i], newText);
-        }
-    
+        }  
     }
+    originalText = originalText.replace(regexDTMF, `<b style = "color:#30D5C8;margin: 0">DTMF DTMF</b>`);
     
     var regex = /vOfficeIncomingCall,s,1\((\d+,\d+,\d+)\)/; 
     var text = originalText.match(regex); 
@@ -250,7 +300,7 @@ if(listOfLogs!=null)
     }
     catch (e) 
     {      
-        listOfLogs.innerHTML = originalText
+        listOfLogs.innerHTML = originalText;
     }
    
 
@@ -290,12 +340,26 @@ for (let i = 0; i < helpTooltips.length; i++) {
   });
 }
 
+
 var acs = document.getElementById('diagnosticTabWithFullLog').getElementsByClassName('ACS');
 
-for (let i = 0; i < acs.length; i++) {  
+for (let i = 0; i < acs.length; i++) 
+{  
     let div = document.createElement('div');  
 
-    div.innerHTML = dictionaryOfTag[acs[i].id]; 
+    try {
+        div.innerHTML = dictionaryOfTag[acs[i].id];
+        
+    } catch (error) {
+        
+    }
+    
+
+    if (acs[i].getElementsByTagName('span').length > 0) {
+       
+        const text = acs[i].getElementsByTagName('span')[0].textContent;
+        div.innerHTML = text.trim();        
+      } 
   
     acs[i].appendChild(div); 
     acs[i].style.position = "relative";
@@ -311,8 +375,6 @@ for (let i = 0; i < acs.length; i++) {
     div.style.padding="10px"; 
     div.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)"; 
     div.style.display = 'none';
-    
-  
   
     acs[i].addEventListener('mouseover', function(event) {
       showDiv(div);
@@ -321,7 +383,7 @@ for (let i = 0; i < acs.length; i++) {
     acs[i].addEventListener('mouseout', function(event) {
       hideDiv(div);
     });
-  }
+}
 
 
 
