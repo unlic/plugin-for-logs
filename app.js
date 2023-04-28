@@ -46,7 +46,9 @@ var dictionaryOfTag = {
     noRouteToDestination: "Немає маршруту для дзвінку",
     executing: "Вид номера в котором клиентом был набран номер - ",
     successNumbers: "Номер с которого осуществлен набор - ",
-    errorNumbers: "Номер с которого была попытка набора - "
+    errorNumbers: "Номер с которого была попытка набора - ",
+    busyHere:"Номер набраного абоненту зайнятий",
+    response503:""
 
 
 };
@@ -157,7 +159,7 @@ if(listOfLogs!=null)
                 needGlobal = true;
                 break; 
             case "noRouteToDestination":
-                str = `VERBOSE AGI Script Executing Application: (Playback) Options: (vOfficeSystem/production/voice/no-route-to-destination)`;
+                str = `vOfficeSystem/production/voice/no-route-to-destination.alaw`;
                 position = 0;
                 typeTag = "b";
                 colorLink = "red";
@@ -192,9 +194,26 @@ if(listOfLogs!=null)
                 needGlobal = true; 
                 needAddToDict = false;                
                 break;   
+            case "busyHere":
+                str = `VERBOSE Got SIP response 486 "Busy Here" back from (.*?)`;
+                colorLink = "#e85f5f";  
+                needGlobal = true; 
+                typeTag = "b";
+                needAddToDict = false;                
+                break; 
+            case "response503":
+                str = `VERBOSE Got SIP response 503 "Service Unavailable" back from ([0-9]+\.[0-9]+)(\.[0-9]+\.[0-9]+:[0-9]+)`;
+                colorLink = "#e85f5f";  
+                needGlobal = true; 
+                needSpan = true; 
+                needAddToDict = false;
+                typeTag = "b";               
+                break;        
             default:
-              
-              break;
+                break;
+
+
+                
 
               
         }
@@ -208,18 +227,43 @@ if(listOfLogs!=null)
         {
             var reg = new RegExp(str);
         }
-              
+
         if(originalText.match(reg))
         {
+            
             var changeText = originalText.match(reg);
             if(typeTag=="a"){hrefTo = hrefTo+changeText[positionText]+'"';}
             if(secondText!=""&&!needGlobal)
             {
                 secondText += changeText[secondPositionText];
+            
             }
 
-            if(needSpan)
+
+            var textForResponse503;
+
+            if(dictionaryKeysOfTag[i]=="response503")
             {
+                
+                if(changeText[1]=="217.76"){textForResponse503 = "Номер Теле2 - Баланс , або якась складність з роботою номера";}
+                else if(changeText[1]=="10.0"){textForResponse503 = "Сім карта в нашому обладнанні - Баланс , або якась складність обладнанні";}
+                else if(changeText[1]=="195.128"){textForResponse503 = "Номер Интертелеком - Баланс , або якась складність з роботою номера";}
+                else {textForResponse503 = "Баланс , або якась складність з роботою номера";}               
+
+
+                console.log(textForResponse503);
+
+            }
+
+
+
+
+
+            if(needSpan)
+            {            
+                
+
+
                 reg = new RegExp(str);
                 var oldSecondString = secondText;
                 for(var q = 0;q < myListStrings.length;q++)
@@ -233,8 +277,19 @@ if(listOfLogs!=null)
                         {
                             secondText += changeText[secondPositionText];
                         }
-                        var textToDict =  dictionaryOfTag[dictionaryKeysOfTag[i]] + changeText[positionText];
+                          dictionaryOfTag[dictionaryKeysOfTag[i]] + changeText[positionText];
                         if(needAddToDict){dictionaryOfTag[dictionaryKeysOfTag[i]] = textToDict+secondText;}
+                        if(dictionaryKeysOfTag[i]=="response503")
+                            {
+                
+                                if(changeText[1]=="217.76"){textForResponse503 = "Номер Теле2 - Баланс , або якась складність з роботою номера";}
+                                else if(changeText[1]=="10.0"){textForResponse503 = "Сім карта в нашому обладнанні - Баланс , або якась складність обладнанні";}
+                                else if(changeText[1]=="195.128"){textForResponse503 = "Номер Интертелеком - Баланс , або якась складність з роботою номера";}
+                                else {textForResponse503 = "Баланс , або якась складність з роботою номера";}
+
+                                var textToDict = textForResponse503;
+                            }
+
                         newSpan = `<span hidden="true"> ${textToDict+secondText}</span>`;
                         myListStrings[q] = myListStrings[q].replace(reg,` <${typeTag} ${hrefTo} style = "color:${colorLink}" ${id} class = "${className}">${changeText[position]} ${newSpan}</${typeTag}>`);
                         originalText = originalText.replace(oldString,myListStrings[q]);
