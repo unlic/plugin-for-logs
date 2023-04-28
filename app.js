@@ -1,3 +1,5 @@
+
+
 var elem = document.getElementsByClassName('in-queue-calls-with-poor-quality')[0];
 
 var element = document.querySelector('.company-id');
@@ -48,7 +50,10 @@ var dictionaryOfTag = {
     successNumbers: "Номер с которого осуществлен набор - ",
     errorNumbers: "Номер с которого была попытка набора - ",
     busyHere:"Номер набраного абоненту зайнятий",
-    response503:""
+    response503:"",
+    NoChannelsAvailable: "Недостатньо каналів для вихідного дзвінка на номере - ",
+    MovedTemporarily: "Установлена переадресация на внутренней линии",
+    NobodyPicked: "Не кто не ответил за - "
 
 
 };
@@ -166,8 +171,8 @@ if(listOfLogs!=null)
                 needAddToDict = false;
                 break;
             case "executing":
-                str = `VERBOSE Executing \\[(\\d+)@(\\w+):1\\]`;
-                secondText = " Локаль клиента - ";
+                str = `VERBOSE Executing \\[(\\d+)@external(\\w+):1\\]`;
+                secondText = " Локаль клиента - external";
                 secondPosition = 2;
                 secondPositionText = 2;
                 position = 0;
@@ -182,8 +187,7 @@ if(listOfLogs!=null)
                 colorLink = "violet"; 
                 needSpan = true;
                 needGlobal = true;
-                needAddToDict = false;
-                                  
+                needAddToDict = false;                                  
                 break; 
             case "errorNumbers":
                 str = `VERBOSE Couldn't call SIP/(\\w+)/(\\w+)`;
@@ -208,14 +212,34 @@ if(listOfLogs!=null)
                 needSpan = true; 
                 needAddToDict = false;
                 typeTag = "b";               
-                break;        
-            default:
+                break;                 
+            case "NoChannelsAvailable":
+                str = `SIP/NoChannelsAvailableOnPbxNumber/(\\d+)`;
+                colorLink = "#e85f5f";  
+                needGlobal = true; 
+                needSpan = true; 
+                needAddToDict = false;
+                typeTag = "b";               
                 break;
-
-
-                
-
-              
+            case "MovedTemporarily":
+                str = `Got SIP response 302 "Moved Temporarily" `;
+                colorLink = "#e85f5f";  
+                needGlobal = true; 
+                needAddToDict = false;
+                typeTag = "b";               
+                break; 
+            case "NobodyPicked":
+                str = `VERBOSE Nobody picked up in (\\d+) (\\w+)`;
+                colorLink = "#51b869"; 
+                secondText = "  ";
+                secondPositionText = 2; 
+                needGlobal = true;
+                needSpan = true; 
+                needAddToDict = false;
+                typeTag = "b";               
+                break;                      
+            default:                
+                break;
         }
 
         if(needGlobal) 
@@ -229,8 +253,7 @@ if(listOfLogs!=null)
         }
 
         if(originalText.match(reg))
-        {
-            
+        {  
             var changeText = originalText.match(reg);
             if(typeTag=="a"){hrefTo = hrefTo+changeText[positionText]+'"';}
             if(secondText!=""&&!needGlobal)
@@ -238,32 +261,16 @@ if(listOfLogs!=null)
                 secondText += changeText[secondPositionText];
             
             }
-
-
             var textForResponse503;
-
             if(dictionaryKeysOfTag[i]=="response503")
-            {
-                
+            { 
                 if(changeText[1]=="217.76"){textForResponse503 = "Номер Теле2 - Баланс , або якась складність з роботою номера";}
                 else if(changeText[1]=="10.0"){textForResponse503 = "Сім карта в нашому обладнанні - Баланс , або якась складність обладнанні";}
                 else if(changeText[1]=="195.128"){textForResponse503 = "Номер Интертелеком - Баланс , або якась складність з роботою номера";}
-                else {textForResponse503 = "Баланс , або якась складність з роботою номера";}               
-
-
-                console.log(textForResponse503);
-
+                else {textForResponse503 = "Баланс , або якась складність з роботою номера";}
             }
-
-
-
-
-
             if(needSpan)
-            {            
-                
-
-
+            {
                 reg = new RegExp(str);
                 var oldSecondString = secondText;
                 for(var q = 0;q < myListStrings.length;q++)
@@ -277,7 +284,7 @@ if(listOfLogs!=null)
                         {
                             secondText += changeText[secondPositionText];
                         }
-                          dictionaryOfTag[dictionaryKeysOfTag[i]] + changeText[positionText];
+                        var textToDict = dictionaryOfTag[dictionaryKeysOfTag[i]] + changeText[positionText];
                         if(needAddToDict){dictionaryOfTag[dictionaryKeysOfTag[i]] = textToDict+secondText;}
                         if(dictionaryKeysOfTag[i]=="response503")
                             {
@@ -287,27 +294,20 @@ if(listOfLogs!=null)
                                 else if(changeText[1]=="195.128"){textForResponse503 = "Номер Интертелеком - Баланс , або якась складність з роботою номера";}
                                 else {textForResponse503 = "Баланс , або якась складність з роботою номера";}
 
-                                var textToDict = textForResponse503;
+                                textToDict = textForResponse503;
                             }
-
                         newSpan = `<span hidden="true"> ${textToDict+secondText}</span>`;
                         myListStrings[q] = myListStrings[q].replace(reg,` <${typeTag} ${hrefTo} style = "color:${colorLink}" ${id} class = "${className}">${changeText[position]} ${newSpan}</${typeTag}>`);
                         originalText = originalText.replace(oldString,myListStrings[q]);
-                    }
-                    
+                    }                    
                 }
-                
-
             }
             else
             {
                 if(needAddToDict){dictionaryOfTag[dictionaryKeysOfTag[i]] = dictionaryOfTag[dictionaryKeysOfTag[i]] + changeText[positionText]+secondText;}
                 originalText = originalText.replace(reg,` <${typeTag} ${hrefTo} style = "color:${colorLink}" ${id} class = "${className}">${changeText[position]} ${newSpan}</${typeTag}>`);
             }
-
-
         }
-
     }   
 
 
@@ -340,6 +340,7 @@ if(listOfLogs!=null)
         }  
     }
     originalText = originalText.replace(regexDTMF, `<b style = "color:#30D5C8;margin: 0">DTMF DTMF</b>`);
+    originalText = originalText.replace(/Описание 8/g, `Дзвінок з номера , який вже видалили з компанії (його немаєв панелі)`)
     
     var regex = /vOfficeIncomingCall,s,1\((\d+,\d+,\d+)\)/; 
     var text = originalText.match(regex); 
@@ -364,11 +365,19 @@ if(listOfLogs!=null)
 }
 var helpTooltips = document.getElementById('diagnosticTabWithFullLog').getElementsByClassName('helpTooltip');
 
+unableToCreateChannelString = "На линию вызов совершить не получилось так как она в оффлайне в момент попытка на нее позвонить";
+
 for (let i = 0; i < helpTooltips.length; i++) {  
-  let div = document.createElement('div'); 
-   
-   
   
+   
+  if(unableToCreateChannelString == helpTooltips[i].dataset.originalTitle)
+  {
+    helpTooltips[i].style.color = "gray";
+    break;
+
+  }
+
+  let div = document.createElement('div');
   div.innerHTML = helpTooltips[i].dataset.originalTitle; 
 
   helpTooltips[i].appendChild(div); 
@@ -393,6 +402,12 @@ for (let i = 0; i < helpTooltips.length; i++) {
   helpTooltips[i].addEventListener('mouseout', function(event) {
     hideDiv(div);
   });
+
+  if(unableToCreateChannelString == helpTooltips[i].dataset.originalTitle)
+  {
+    
+
+  }
 }
 
 
